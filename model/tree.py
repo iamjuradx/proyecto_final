@@ -7,14 +7,14 @@ class Tree:
         self.root: Optional[Node] = None
 
     def add(self, person: Person):
-        node = Node(person)
+        new_node = Node(person)
         if self.root is None:
-            self.root = node
+            self.root = new_node
         else:
-            self._add(self.root, node)
+            self._add(self.root, new_node)
 
     def _add(self, current: Node, new_node: Node):
-        # very simple: compare by id string
+        # Simple comparison using the person's ID
         if new_node.person.id < current.person.id:
             if current.children:
                 self._add(current.children[0], new_node)
@@ -27,28 +27,30 @@ class Tree:
                 current.add_child(new_node)
 
     def find(self, person_id: str) -> Optional[Person]:
-        return self._find(self.root, person_id)
+        return self._find_person(self.root, person_id)
 
-    def _find(self, node: Optional[Node], person_id: str):
+    def _find_person(self, node: Optional[Node], person_id: str):
         if node is None:
             return None
         if node.person.id == person_id:
             return node.person
-        for c in node.children:
-            res = self._find(c, person_id)
-            if res:
-                return res
+        for child in node.children:
+            result = self._find_person(child, person_id)
+            if result:
+                return result
         return None
 
     def list_all(self) -> List[Person]:
-        out: List[Person] = []
-        def dfs(n: Optional[Node]):
-            if n:
-                out.append(n.person)
-                for c in n.children:
-                    dfs(c)
-        dfs(self.root)
-        return out
+        people: List[Person] = []
+
+        def walk(node: Optional[Node]):
+            if node:
+                people.append(node.person)
+                for child in node.children:
+                    walk(child)
+
+        walk(self.root)
+        return people
 
     def update(self, person: Person) -> bool:
         return self._update(self.root, person)
@@ -59,8 +61,8 @@ class Tree:
         if node.person.id == person.id:
             node.person = person
             return True
-        for c in node.children:
-            if self._update(c, person):
+        for child in node.children:
+            if self._update(child, person):
                 return True
         return False
 
@@ -77,7 +79,24 @@ class Tree:
         node.remove_child(person_id)
         if len(node.children) < before:
             return True
-        for c in node.children:
-            if self._delete(c, person_id):
+        for child in node.children:
+            if self._delete(child, person_id):
                 return True
         return False
+
+    def find_parent(self, person_id: str) -> Optional[Person]:
+        node = self._find_node(self.root, person_id)
+        if node and node.parent:
+            return node.parent.person
+        return None
+
+    def _find_node(self, node: Optional[Node], person_id: str) -> Optional[Node]:
+        if node is None:
+            return None
+        if node.person.id == person_id:
+            return node
+        for child in node.children:
+            result = self._find_node(child, person_id)
+            if result:
+                return result
+        return None

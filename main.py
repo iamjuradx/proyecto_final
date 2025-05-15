@@ -13,13 +13,10 @@ app.include_router(r1)
 app.include_router(r2)
 app.include_router(r3)
 
-# Si quieres servir HTML desde /, descomenta estas líneas y pon tu index.html en /templates
 # templates = Jinja2Templates(directory="templates")
 # @app.get("/", response_class=HTMLResponse)
 # async def serve_html(request: Request):
-#     return templates.TemplateResponse("index.html", {"request": request})
-
-# en su lugar, ahora tu raíz devuelve JSON
+#  return templates.TemplateResponse("index.html", {"request": request})
 @app.get("/", tags=["root"])
 async def root():
     return {"message": "Hello World"}
