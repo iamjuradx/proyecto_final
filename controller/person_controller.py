@@ -6,49 +6,53 @@ from service.person_service import PersonService
 router = APIRouter(prefix="/persons")
 svc = PersonService()
 
-@router.post("/", response_model=dict)
-def create(p: Person):
-    try:
-        svc.create(p)
-        return {"msg":"created"}
-    except ValueError:
-        raise HTTPException(400,"exists")
-
 @router.get("/", response_model=List[Person])
-def list_all():
+def list_persons():
     return svc.list_all()
 
-@router.get("/{id}", response_model=Person)
-def get_one(id: str):
+@router.post("/", response_model=None)
+def create_person(person: Person):
     try:
-        return svc.get(id)
-    except ValueError:
-        raise HTTPException(404,"not found")
+        svc.create(person)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
-@router.put("/", response_model=dict)
-def update(p: Person):
-    try:
-        svc.update(p)
-        return {"msg":"updated"}
-    except ValueError:
-        raise HTTPException(404,"not found")
+@router.get("/{person_id}", response_model=Person)
+def get_person(person_id: str):
+    p = svc.get(person_id)
+    if not p:
+        raise HTTPException(404, "Not found")
+    return p
 
-@router.delete("/{id}", response_model=dict)
-def delete(id: str):
+@router.put("/", response_model=None)
+def update_person(person: Person):
     try:
-        svc.delete(id)
-        return {"msg":"deleted"}
-    except ValueError:
-        raise HTTPException(404,"not found")
+        svc.update(person)
+    except LookupError:
+        raise HTTPException(404, "Not found")
+
+@router.delete("/{person_id}", response_model=None)
+def delete_person(person_id: str):
+    try:
+        svc.delete(person_id)
+    except LookupError:
+        raise HTTPException(404, "Not found")
 
 @router.get("/by-location/{code}", response_model=List[Person])
-def by_loc(code: str):
-    return svc.by_location(code)
+def by_location(code: str):
+    return svc.list_by_location(code)
 
 @router.get("/by-filter", response_model=List[Person])
-def by_filter(doc: str, gender: str, loc: str):
-    return svc.by_doc_gender_loc(doc, gender, loc)
+def by_filter(doc_type: str, gender: str, loc_code: str):
+    return svc.list_by_filter(doc_type, gender, loc_code)
 
-@router.get("/adult-daughters", response_model=List[Person])
-def adults():
-    return svc.adult_daughters()
+@router.get("/with-adult-daughters", response_model=List[Person])
+def with_adult_daughters():
+    return svc.list_with_adult_daughters()
+
+@router.get("/parent/{person_id}", response_model=Person)
+def get_parent(person_id: str):
+    parent = svc.tree.find_parent(person_id)
+    if not parent:
+        raise HTTPException(404, "Not found")
+    return parent

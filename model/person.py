@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from model.location import Location
-from model.typedoc import TypeDoc
+from .location import Location
+from .typedoc import TypeDoc
 
 class Person(BaseModel):
     id: str

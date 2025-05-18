@@ -1,19 +1,16 @@
 from typing import List, Optional
-from model.person import Person
+from .person import Person
 
 class Node:
     def __init__(self, person: Person):
         self.person = person
-        self.children: List["Node"] = []
-        self.parent: Optional["Node"] = None  # 🔸 Nuevo atributo (V2)
+        self.children: List[Node] = []
+        self.parent: Optional[Node] = None
 
     def add_child(self, child: "Node"):
-        child.parent = self               # 🔸 Establecer el padre
+        child.parent = self
         self.children.append(child)
 
     def remove_child(self, person_id: str):
-        for i, child in enumerate(self.children):
-            if child.person.id == person_id:
-                child.parent = None       # 🔸 Limpiar referencia al padre
-                del self.children[i]
-                break
+        # elimina el hijo cuyo person.id coincide
+        self.children = [c for c in self.children if c.person.id != person_id]

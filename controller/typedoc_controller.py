@@ -7,5 +7,5 @@ router = APIRouter(prefix="/typedocs")
 svc = TypeDocService()
 
 @router.get("/", response_model=List[TypeDoc])
-def all_typedocs():
-    return svc.list_all()
+def all_types():
+    return svc.get_all()

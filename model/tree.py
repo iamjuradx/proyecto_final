@@ -1,6 +1,6 @@
 from typing import Optional, List
-from model.node import Node
-from model.person import Person
+from .node import Node
+from .person import Person
 
 class Tree:
     def __init__(self):
@@ -14,45 +14,47 @@ class Tree:
             self._add(self.root, new_node)
 
     def _add(self, current: Node, new_node: Node):
-        # Simple comparison using the person's ID
+        # simple: comparar por id
         if new_node.person.id < current.person.id:
+            # hijo izquierdo
             if current.children:
                 self._add(current.children[0], new_node)
             else:
                 current.add_child(new_node)
         else:
+            # hijo derecho
             if len(current.children) > 1:
                 self._add(current.children[1], new_node)
             else:
                 current.add_child(new_node)
 
     def find(self, person_id: str) -> Optional[Person]:
-        return self._find_person(self.root, person_id)
+        return self._find(self.root, person_id)
 
-    def _find_person(self, node: Optional[Node], person_id: str):
+    def _find(self, node: Optional[Node], person_id: str) -> Optional[Person]:
         if node is None:
             return None
         if node.person.id == person_id:
             return node.person
+        # buscar recursivamente
         for child in node.children:
-            result = self._find_person(child, person_id)
-            if result:
-                return result
+            found = self._find(child, person_id)
+            if found:
+                return found
         return None
 
     def list_all(self) -> List[Person]:
-        people: List[Person] = []
-
-        def walk(node: Optional[Node]):
-            if node:
-                people.append(node.person)
-                for child in node.children:
-                    walk(child)
-
-        walk(self.root)
-        return people
+        result: List[Person] = []
+        def collect(n: Optional[Node]):
+            if n:
+                result.append(n.person)
+                for ch in n.children:
+                    collect(ch)
+        collect(self.root)
+        return result
 
     def update(self, person: Person) -> bool:
+        # retorna True si lo encontró y actualizó
         return self._update(self.root, person)
 
     def _update(self, node: Optional[Node], person: Person) -> bool:
@@ -61,12 +63,13 @@ class Tree:
         if node.person.id == person.id:
             node.person = person
             return True
-        for child in node.children:
-            if self._update(child, person):
+        for ch in node.children:
+            if self._update(ch, person):
                 return True
         return False
 
     def delete(self, person_id: str) -> bool:
+        # si es root
         if self.root and self.root.person.id == person_id:
             self.root = None
             return True
@@ -79,8 +82,8 @@ class Tree:
         node.remove_child(person_id)
         if len(node.children) < before:
             return True
-        for child in node.children:
-            if self._delete(child, person_id):
+        for ch in node.children:
+            if self._delete(ch, person_id):
                 return True
         return False
 
@@ -95,8 +98,8 @@ class Tree:
             return None
         if node.person.id == person_id:
             return node
-        for child in node.children:
-            result = self._find_node(child, person_id)
-            if result:
-                return result
+        for ch in node.children:
+            found = self._find_node(ch, person_id)
+            if found:
+                return found
         return None
